@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { 
@@ -97,37 +98,104 @@ const mockApplications: Application[] = [
   }
 ];
 
+// Function to fetch applications from the database
+const fetchUserApplications = async (userId: string) => {
+  try {
+    const response = await fetch(`/api/applications?userId=${userId}`);
+    if (!response.ok) throw new Error('Failed to fetch applications');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching applications:', error);
+    return mockApplications; // Fallback to mock data if fetch fails
+  }
+};
+
+// Function to submit an application to the database
+const submitApplication = async (applicationId: number) => {
+  try {
+    const response = await fetch(`/api/applications/${applicationId}/submit`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!response.ok) throw new Error('Failed to submit application');
+    return true;
+  } catch (error) {
+    console.error('Error submitting application:', error);
+    return false;
+  }
+};
+
+// Function to delete (mark as deleted) an application
+const deleteApplication = async (applicationId: number) => {
+  try {
+    const response = await fetch(`/api/applications/${applicationId}`, {
+      method: 'DELETE'
+    });
+    if (!response.ok) throw new Error('Failed to delete application');
+    return true;
+  } catch (error) {
+    console.error('Error deleting application:', error);
+    return false;
+  }
+};
+
 export default function ApplicationsPage() {
-  const [applications, setApplications] = useState<Application[]>(mockApplications);
+  const [applications, setApplications] = useState<Application[]>([]);
+  const { data: session } = useSession();
+  const userId = session?.user?.id || '';
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<'submit' | 'delete' | null>(null);
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
 
+  // Load applications when component mounts or userId changes
+  useEffect(() => {
+    const loadApplications = async () => {
+      if (userId) {
+        const apps = await fetchUserApplications(userId);
+        setApplications(apps);
+      }
+    };
+    
+    loadApplications();
+  }, [userId]);
+
   // Handle dialog confirmation
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!selectedApplication) return;
     
+    let success = false;
+    
     if (dialogType === 'submit') {
-      // Update application status to UNDER_REVIEW
-      const updatedApplications = applications.map(app => 
-        app.id === selectedApplication.id
-          ? { 
-              ...app, 
-              status: 'UNDER_REVIEW' as const,
-              date_submitted: new Date().toISOString()
-            }
-          : app
-      );
-      setApplications(updatedApplications);
+      // Submit application to database
+      success = await submitApplication(selectedApplication.id);
+      if (success) {
+        // Update application status locally
+        const updatedApplications = applications.map(app => 
+          app.id === selectedApplication.id
+            ? { 
+                ...app, 
+                status: 'UNDER_REVIEW' as const,
+                date_submitted: new Date().toISOString()
+              }
+            : app
+        );
+        setApplications(updatedApplications);
+      }
     } else if (dialogType === 'delete') {
-      // Update application status to DELETED
-      const updatedApplications = applications.map(app => 
-        app.id === selectedApplication.id
-          ? { ...app, status: 'DELETED' as const }
-          : app
-      );
-      setApplications(updatedApplications);
+      // Delete application in database
+      success = await deleteApplication(selectedApplication.id);
+      if (success) {
+        // Update application status locally
+        const updatedApplications = applications.map(app => 
+          app.id === selectedApplication.id
+            ? { ...app, status: 'DELETED' as const }
+            : app
+        );
+        setApplications(updatedApplications);
+      }
     }
+    
+    // If the operation failed, we could show an error toast here
     
     setDialogOpen(false);
     setSelectedApplication(null);
@@ -201,8 +269,8 @@ export default function ApplicationsPage() {
                 </Link>
               </DropdownMenuItem>
               
-              {/* Edit - only for NOT_SUBMITTED */}
-              {application.status === 'NOT_SUBMITTED' && (
+              {/* Edit - only for NOT_SUBMITTED or NOT_COMPLETED */}
+              {(application.status === 'NOT_SUBMITTED' || application.status === 'NOT_COMPLETED') && (
                 <DropdownMenuItem asChild>
                   <Link href={`/dashboard/applications/${application.id}/edit`} className="w-full cursor-pointer">
                     <Edit className="h-4 w-4 mr-2" />
@@ -211,16 +279,16 @@ export default function ApplicationsPage() {
                 </DropdownMenuItem>
               )}
               
-              {/* Submit - only for NOT_SUBMITTED */}
-              {application.status === 'NOT_SUBMITTED' && (
+              {/* Submit - only for NOT_SUBMITTED or NOT_COMPLETED */}
+              {(application.status === 'NOT_SUBMITTED' || application.status === 'NOT_COMPLETED') && (
                 <DropdownMenuItem onClick={() => openDialog('submit', application)}>
                   <Send className="h-4 w-4 mr-2 text-blue-500" />
                   <span className="text-blue-500">Submit</span>
                 </DropdownMenuItem>
               )}
               
-              {/* Delete - only for NOT_SUBMITTED */}
-              {application.status === 'NOT_SUBMITTED' && (
+              {/* Delete - only for NOT_SUBMITTED or NOT_COMPLETED */}
+              {(application.status === 'NOT_SUBMITTED' || application.status === 'NOT_COMPLETED') && (
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => openDialog('delete', application)}>

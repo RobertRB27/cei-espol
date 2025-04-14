@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { 
@@ -29,13 +29,22 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useSession } from 'next-auth/react';
 
-// Function to fetch applications that need review (would normally come from an API)
+// Function to fetch applications that need review from the API
 const fetchApplicationsForReview = async (reviewerId: string) => {
-  // In a real app, this would be an API call to get applications assigned to this reviewer
-  // or applications with status UNDER_REVIEW or SECOND_REVIEW
-  
-  // For now, we'll filter our mock data to only show applications that would be under review
-  return [
+  try {
+    const response = await fetch('/api/applications/review');
+    if (!response.ok) {
+      console.error('Failed to fetch applications for review:', response.status);
+      return [];
+    }
+    
+    const applications = await response.json();
+    console.log('Fetched applications for review:', applications);
+    return applications;
+  } catch (error) {
+    console.error('Error fetching applications for review:', error);
+    // Return mock data as fallback if API fails
+    return [
     {
       id: 2,
       user_id: 'bbbbbbbb-2222-2222-2222-222222222222',
@@ -94,6 +103,7 @@ const fetchApplicationsForReview = async (reviewerId: string) => {
       applicant_email: 'mariagarcia@example.com'
     }
   ] as any[];
+  }
 };
 
 export default function ReviewApplicationsPage() {
@@ -105,7 +115,7 @@ export default function ReviewApplicationsPage() {
   const reviewerId = session?.user?.id || '';
   
   // Fetch applications when the component mounts or reviewerId changes
-  useState(() => {
+  useEffect(() => {
     const loadApplications = async () => {
       if (reviewerId) {
         const apps = await fetchApplicationsForReview(reviewerId);
@@ -114,41 +124,74 @@ export default function ReviewApplicationsPage() {
     };
     
     loadApplications();
-  });
+  }, [reviewerId]); // Add reviewerId as a dependency
 
   // Handle dialog confirmation
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!selectedApplication) return;
     
     let newStatus;
+    let actionDescription;
     switch (dialogType) {
       case 'accept':
         // When a reviewer approves, it goes to SECOND_REVIEW for role 2 users to manage
         newStatus = 'SECOND_REVIEW';
+        actionDescription = 'Application approved and sent for final review';
         break;
       case 'reject':
         newStatus = 'REJECTED';
+        actionDescription = 'Application rejected due to ethics or methodology concerns';
         break;
       case 'incomplete':
         newStatus = 'NOT_COMPLETED';
+        actionDescription = 'Application requires additional information or documentation';
         break;
       default:
         return;
     }
     
-    // Update application status
-    const updatedApplications = applications.map(app => 
-      app.id === selectedApplication.id
-        ? { ...app, status: newStatus }
-        : app
-    );
-    setApplications(updatedApplications);
-    
-    setDialogOpen(false);
-    setSelectedApplication(null);
-    setDialogType(null);
-    
-    // In a real app, you would send this update to your API
+    try {
+      // Call the API to update application status
+      const response = await fetch(`/api/applications/${selectedApplication.id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: newStatus,
+          comments: actionDescription
+        })
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to update application status:', await response.text());
+        // Show error toast or message here
+        return;
+      }
+      
+      // Update the local state with the new status
+      const updatedApplications = applications.map(app => 
+        app.id === selectedApplication.id
+          ? { ...app, status: newStatus }
+          : app
+      );
+      
+      // If approved or rejected, remove from the list to avoid confusion
+      if (newStatus === 'SECOND_REVIEW' || newStatus === 'REJECTED' || newStatus === 'NOT_COMPLETED') {
+        setApplications(applications.filter(app => app.id !== selectedApplication.id));
+      } else {
+        setApplications(updatedApplications);
+      }
+      
+      // Show success message
+      console.log(`Application ${selectedApplication.id} status updated to ${newStatus}`);
+      
+      // Close the dialog
+      setDialogOpen(false);
+      setSelectedApplication(null);
+      setDialogType(null);
+    } catch (error) {
+      console.error('Error updating application status:', error);
+      // Show error toast or message here
+    }
   };
 
   // Open dialog for confirmation

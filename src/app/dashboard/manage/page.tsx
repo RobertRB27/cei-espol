@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { 
@@ -31,9 +31,20 @@ import { useSession } from 'next-auth/react';
 
 // Function to fetch applications in SECOND_REVIEW status
 const fetchApplicationsForManagement = async () => {
-  // This would be an API call in a real app
-  // For now, we'll use mock data
-  return [
+  try {
+    const response = await fetch('/api/applications/manage');
+    if (!response.ok) {
+      console.error('Failed to fetch applications for management:', response.status);
+      return [];
+    }
+    
+    const applications = await response.json();
+    console.log('Fetched applications for management:', applications);
+    return applications;
+  } catch (error) {
+    console.error('Error fetching applications for management:', error);
+    // Return mock data as fallback if API fails
+    return [
     {
       id: 5,
       user_id: 'bbbbbbbb-2222-2222-2222-222222222222',
@@ -56,6 +67,7 @@ const fetchApplicationsForManagement = async () => {
       reviewer_comments: 'Reviewed and ready for final approval'
     }
   ] as any[];
+  }
 };
 
 export default function ManageApplicationsPage() {
@@ -66,34 +78,55 @@ export default function ManageApplicationsPage() {
   const { data: session } = useSession();
   
   // Fetch applications when the component mounts
-  useState(() => {
+  useEffect(() => {
     const loadApplications = async () => {
       const apps = await fetchApplicationsForManagement();
       setApplications(apps);
     };
     
     loadApplications();
-  });
+  }, []); // Empty dependency array means this effect runs once on mount
 
   // Handle dialog confirmation
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!selectedApplication) return;
     
     const newStatus = dialogType === 'accept' ? 'ACCEPTED' : 'REJECTED';
+    const actionDescription = dialogType === 'accept' 
+      ? 'Application final approval by manager' 
+      : 'Application rejected at final review stage';
     
-    // Update application status
-    const updatedApplications = applications.map(app => 
-      app.id === selectedApplication.id
-        ? { ...app, status: newStatus }
-        : app
-    );
-    setApplications(updatedApplications);
-    
-    setDialogOpen(false);
-    setSelectedApplication(null);
-    setDialogType(null);
-    
-    // In a real app, you would send this update to your API
+    try {
+      // Call the API to update application status
+      const response = await fetch(`/api/applications/${selectedApplication.id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: newStatus,
+          comments: actionDescription
+        })
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to update application status:', await response.text());
+        // Show error toast or message here
+        return;
+      }
+      
+      // Remove the application from the list after action
+      setApplications(applications.filter(app => app.id !== selectedApplication.id));
+      
+      // Show success message
+      console.log(`Application ${selectedApplication.id} status updated to ${newStatus}`);
+      
+      // Close the dialog
+      setDialogOpen(false);
+      setSelectedApplication(null);
+      setDialogType(null);
+    } catch (error) {
+      console.error('Error updating application status:', error);
+      // Show error toast or message here
+    }
   };
 
   // Open dialog for confirmation
