@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { 
@@ -163,7 +164,9 @@ export default function ReviewApplicationsPage() {
       
       if (!response.ok) {
         console.error('Failed to update application status:', await response.text());
-        // Show error toast or message here
+        toast.error('Failed to update application status', {
+          description: 'Please try again or contact the administrator.'
+        });
         return;
       }
       
@@ -184,13 +187,30 @@ export default function ReviewApplicationsPage() {
       // Show success message
       console.log(`Application ${selectedApplication.id} status updated to ${newStatus}`);
       
+      // Show toast notification based on the action taken
+      if (newStatus === 'SECOND_REVIEW') {
+        toast.success('Application approved', {
+          description: 'Application has been sent for final review.'
+        });
+      } else if (newStatus === 'REJECTED') {
+        toast.success('Application rejected', {
+          description: 'Application has been rejected.'
+        });
+      } else if (newStatus === 'NOT_COMPLETED') {
+        toast.success('Application marked as incomplete', {
+          description: 'Applicant will be notified to provide additional information.'
+        });
+      }
+      
       // Close the dialog
       setDialogOpen(false);
       setSelectedApplication(null);
       setDialogType(null);
     } catch (error) {
       console.error('Error updating application status:', error);
-      // Show error toast or message here
+      toast.error('Error updating application', {
+        description: 'An unexpected error occurred. Please try again.'
+      });
     }
   };
 

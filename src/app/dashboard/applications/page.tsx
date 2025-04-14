@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
@@ -180,6 +181,13 @@ export default function ApplicationsPage() {
             : app
         );
         setApplications(updatedApplications);
+        toast.success('Application submitted successfully', {
+          description: 'Your application is now under review.'
+        });
+      } else {
+        toast.error('Failed to submit application', {
+          description: 'Please try again or contact support.'
+        });
       }
     } else if (dialogType === 'delete') {
       // Delete application in database
@@ -192,6 +200,11 @@ export default function ApplicationsPage() {
             : app
         );
         setApplications(updatedApplications);
+        toast.success('Application deleted successfully');
+      } else {
+        toast.error('Failed to delete application', {
+          description: 'Please try again or contact support.'
+        });
       }
     }
     
