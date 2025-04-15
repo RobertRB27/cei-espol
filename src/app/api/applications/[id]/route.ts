@@ -8,8 +8,8 @@ export async function DELETE(
   context: { params: { id: string } }
 ) {
   try {
-    const { params } = context;
-    const id = params.id;
+    // Properly destructure id directly to avoid the Next.js warning
+    const { id } = context.params;
     
     // Get the current session to verify authentication
     const session = await getServerSession();

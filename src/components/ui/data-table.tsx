@@ -111,7 +111,7 @@ export function DataTable<T>({
     <div className="w-full space-y-4">
       {searchable && searchKeys.length > 0 && (
         <div className="flex items-center gap-2">
-          <div className="relative flex-1">
+          <div className="relative w-64">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
             <Input
               placeholder="Search..."

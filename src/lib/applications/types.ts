@@ -47,7 +47,7 @@ export interface ApplicationReview {
 // UI helper functions
 
 export function formatDate(dateString: string | null): string {
-  if (!dateString) return 'N/A';
+  if (!dateString) return '';
   
   try {
     // Handle different date formats
@@ -71,13 +71,13 @@ export function formatDate(dateString: string | null): string {
 
 export function getStatusLabel(status: ApplicationStatus): string {
   const statusMap: Record<ApplicationStatus, string> = {
-    'NOT_SUBMITTED': 'Not Submitted',
-    'UNDER_REVIEW': 'Under Review',
-    'SECOND_REVIEW': 'Second Review',
-    'ACCEPTED': 'Accepted',
-    'REJECTED': 'Rejected',
-    'DELETED': 'Deleted',
-    'NOT_COMPLETED': 'Not Completed'
+    'NOT_SUBMITTED': 'No Enviado',
+    'UNDER_REVIEW': 'En Revisión',
+    'SECOND_REVIEW': 'Segunda Revisión',
+    'ACCEPTED': 'Aceptado',
+    'REJECTED': 'Rechazado',
+    'DELETED': 'Eliminado',
+    'NOT_COMPLETED': 'Incompleto'
   };
   
   return statusMap[status] || status;
