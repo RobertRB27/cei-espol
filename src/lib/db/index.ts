@@ -1,13 +1,21 @@
 import { Pool } from 'pg';
 
 // Database connection configuration
-const isDevelopment = process.env.NODE_ENV !== 'production';
+// Doble verificación para asegurarnos de usar la configuración correcta en producción
+const isDevelopment = process.env.NODE_ENV !== 'production' && !process.env.VERCEL;
 
 // Configuration for database
 let poolConfig: any;
 
-if (isDevelopment) {
-  // Local development database
+// Depuración para ayudar a identificar problemas
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('VERCEL:', process.env.VERCEL);
+console.log('DATABASE_URL disponible:', !!process.env.DATABASE_URL);
+console.log('Entorno de desarrollo:', isDevelopment);
+
+if (isDevelopment && !process.env.DATABASE_URL) {
+  // Local development database - solo si DATABASE_URL no está disponible
+  console.log('Usando configuración de base de datos local');
   poolConfig = {
     host: 'localhost',
     port: 5432,
@@ -16,7 +24,11 @@ if (isDevelopment) {
     password: 'rosso2711',
   };
 } else {
-  // Production database (Neon)
+  // Production database (Neon) o si DATABASE_URL está disponible incluso en desarrollo
+  console.log('Usando configuración de base de datos en la nube (Neon)');
+  if (!process.env.DATABASE_URL) {
+    console.error('ERROR: DATABASE_URL no está configurada en el entorno');
+  }
   poolConfig = {
     connectionString: process.env.DATABASE_URL,
     ssl: {
