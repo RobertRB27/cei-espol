@@ -33,7 +33,12 @@ const NewPasswordSchema = z.object({
 
 type FormData = z.infer<typeof NewPasswordSchema>;
 
-export default function NewPasswordPage({ params }: { params: { token: string } }) {
+// En Next.js 15, los parámetros se pasan como props no como un objeto anidado
+export default function NewPasswordPage(props: {
+  params: { token: string },
+  searchParams: Record<string, string | string[] | undefined>
+}) {
+  const { params } = props;
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
