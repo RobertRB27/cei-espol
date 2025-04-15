@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { SignUpSchema, SignUpFormData } from '@/lib/auth/schemas';
-import { z } from 'zod';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { signUp } from '@/lib/auth/actions';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { SignUpSchema, SignUpFormData } from "@/lib/auth/schemas";
+import { z } from "zod";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { signUp } from "@/lib/auth/actions";
 
 // UI Components
 import {
@@ -17,9 +17,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -27,42 +27,42 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 
 export default function SignUpPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const form = useForm<z.infer<typeof SignUpSchema>>({
     resolver: zodResolver(SignUpSchema),
     defaultValues: {
-      firstName: '',
-      secondName: '',
-      firstSurname: '',
-      secondSurname: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
+      firstName: "",
+      secondName: "",
+      firstSurname: "",
+      secondSurname: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof SignUpSchema>) {
     setIsLoading(true);
-    setError('');
+    setError("");
 
     try {
       const result = await signUp(values);
-      
+
       if (result.success) {
         // Redirect to sign-in page on successful registration
-        router.push('/sign-in?registered=true');
+        router.push("/sign-in?registered=true");
       } else {
-        setError(result.error || 'An error occurred during sign-up');
+        setError(result.error || "An error occurred during sign-up");
       }
     } catch (err) {
-      console.error('Sign-up error:', err);
-      setError('An unexpected error occurred. Please try again.');
+      console.error("Sign-up error:", err);
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -72,9 +72,9 @@ export default function SignUpPage() {
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl text-center">Create an Account</CardTitle>
+          <CardTitle className="text-2xl text-center">Regístrate</CardTitle>
           <CardDescription className="text-center">
-            Fill out the form below to register
+            Llena el formulario para registrarte
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -83,7 +83,7 @@ export default function SignUpPage() {
               {error}
             </div>
           )}
-          
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -92,7 +92,7 @@ export default function SignUpPage() {
                   name="firstName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>First Name</FormLabel>
+                      <FormLabel>Nombre</FormLabel>
                       <FormControl>
                         <Input placeholder="John" {...field} />
                       </FormControl>
@@ -100,13 +100,13 @@ export default function SignUpPage() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="secondName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Second Name (optional)</FormLabel>
+                      <FormLabel>Segundo nombre (opcional)</FormLabel>
                       <FormControl>
                         <Input placeholder="David" {...field} />
                       </FormControl>
@@ -115,14 +115,14 @@ export default function SignUpPage() {
                   )}
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="firstSurname"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>First Surname</FormLabel>
+                      <FormLabel>Apellido paterno</FormLabel>
                       <FormControl>
                         <Input placeholder="Doe" {...field} />
                       </FormControl>
@@ -130,13 +130,13 @@ export default function SignUpPage() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="secondSurname"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Second Surname (optional)</FormLabel>
+                      <FormLabel>Apellido materno (opcional)</FormLabel>
                       <FormControl>
                         <Input placeholder="Smith" {...field} />
                       </FormControl>
@@ -145,60 +145,72 @@ export default function SignUpPage() {
                   )}
                 />
               </div>
-              
+
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Correo electrónico</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="john.doe@example.com" {...field} />
+                      <Input
+                        type="email"
+                        placeholder="john.doe@example.com"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>Contraseña</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="********" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="********"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
+                    <FormLabel>Confirmar contraseña</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="********" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="********"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              
+
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Registering...' : 'Register'}
+                {isLoading ? "Registrando..." : "Registrarse"}
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-gray-600">
-            Already have an account?{' '}
+            ¿Ya tienes una cuenta?{" "}
             <Link href="/sign-in" className="text-blue-600 hover:underline">
-              Sign in
+              Iniciar sesión
             </Link>
           </p>
         </CardFooter>

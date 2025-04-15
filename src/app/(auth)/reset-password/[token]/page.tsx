@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
-import { z } from 'zod';
-import Link from 'next/link';
-import type { Metadata } from 'next';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { z } from "zod";
+import Link from "next/link";
+import type { Metadata } from "next";
 
 // UI Components
 import {
@@ -16,28 +16,37 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { setNewPassword } from '@/lib/auth/actions';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { setNewPassword } from "@/lib/auth/actions";
 
 // Schema for password reset
-const NewPasswordSchema = z.object({
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string().min(8, 'Confirm password is required'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-});
+const NewPasswordSchema = z
+  .object({
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string().min(8, "Confirm password is required"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 type FormData = z.infer<typeof NewPasswordSchema>;
 
 // Eliminamos temporalmente la tipificación para permitir el despliegue
 export default function NewPasswordPage({ params }: any) {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const router = useRouter();
   const token = params.token;
@@ -45,14 +54,14 @@ export default function NewPasswordPage({ params }: any) {
   const form = useForm<FormData>({
     resolver: zodResolver(NewPasswordSchema),
     defaultValues: {
-      password: '',
-      confirmPassword: '',
+      password: "",
+      confirmPassword: "",
     },
   });
 
   async function onSubmit(values: FormData) {
     setIsLoading(true);
-    setError('');
+    setError("");
 
     try {
       const result = await setNewPassword({
@@ -64,14 +73,14 @@ export default function NewPasswordPage({ params }: any) {
         setSuccess(true);
         // Redirect to sign-in after successful password reset
         setTimeout(() => {
-          router.push('/sign-in');
+          router.push("/sign-in");
         }, 2000);
       } else {
-        setError(result.error || 'Failed to reset password');
+        setError(result.error || "Failed to reset password");
       }
     } catch (err) {
-      console.error('Password reset error:', err);
-      setError('An unexpected error occurred. Please try again.');
+      console.error("Password reset error:", err);
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -81,33 +90,37 @@ export default function NewPasswordPage({ params }: any) {
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
-          <CardDescription>
-            Enter your new password below
-          </CardDescription>
+          <CardTitle className="text-2xl font-bold">
+            Resetea tu contraseña
+          </CardTitle>
+          <CardDescription>Introduce tu nueva contraseña abajo</CardDescription>
         </CardHeader>
         <CardContent>
           {success ? (
             <Alert className="mb-4 bg-green-50 text-green-700 border-green-200">
               <AlertDescription>
-                Your password has been reset successfully. Redirecting to sign in...
+                Tu contraseña ha sido restablecida correctamente. Redirigiéndote
+                al inicio de sesión...
               </AlertDescription>
             </Alert>
           ) : (
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 {error && (
                   <Alert className="mb-4 bg-red-50 text-red-700 border-red-200">
                     <AlertDescription>{error}</AlertDescription>
                   </Alert>
                 )}
-                
+
                 <FormField
                   control={form.control}
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>New Password</FormLabel>
+                      <FormLabel>Contraseña nueva</FormLabel>
                       <FormControl>
                         <Input
                           type="password"
@@ -120,13 +133,13 @@ export default function NewPasswordPage({ params }: any) {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
+                      <FormLabel>Confirmar contraseña</FormLabel>
                       <FormControl>
                         <Input
                           type="password"
@@ -139,9 +152,9 @@ export default function NewPasswordPage({ params }: any) {
                     </FormItem>
                   )}
                 />
-                
+
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Resetting...' : 'Reset Password'}
+                  {isLoading ? "Restableciendo..." : "Restablecer contraseña"}
                 </Button>
               </form>
             </Form>
@@ -149,9 +162,9 @@ export default function NewPasswordPage({ params }: any) {
         </CardContent>
         <CardFooter>
           <div className="text-sm text-gray-500 text-center w-full">
-            Remember your password?{' '}
+            ¿Recordarás tu contraseña?{" "}
             <Link href="/sign-in" className="text-blue-500 hover:underline">
-              Sign in
+              Iniciar sesión
             </Link>
           </div>
         </CardFooter>
