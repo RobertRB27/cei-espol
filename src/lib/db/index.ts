@@ -1,13 +1,32 @@
 import { Pool } from 'pg';
 
-// Database connection pool
-const pool = new Pool({
-  host: 'localhost',
-  port: 5432,
-  database: 'cei_espol_db_dev',
-  user: 'admin_cei_db',
-  password: 'rosso2711',
-});
+// Database connection configuration
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
+// Configuration for database
+let poolConfig: any;
+
+if (isDevelopment) {
+  // Local development database
+  poolConfig = {
+    host: 'localhost',
+    port: 5432,
+    database: 'cei_espol_db_dev',
+    user: 'admin_cei_db',
+    password: 'rosso2711',
+  };
+} else {
+  // Production database (Neon)
+  poolConfig = {
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    }
+  };
+}
+
+// Create pool with appropriate configuration
+const pool = new Pool(poolConfig);
 
 // Set the default schema
 pool.on('connect', (client) => {
