@@ -30,7 +30,7 @@ export default function Home() {
         />
         <div className="text-center sm:text-left max-w-xl">
           <h1 className="text-3xl font-bold mb-4">
-            Bienvenido a sistem del CEI-ESPOL
+            Bienvenido a sistema del CEI-ESPOL
           </h1>
           <p className="mb-4 text-gray-700 dark:text-gray-300">
             Inicia sesión para acceder a tus aplicaciones y gestionar tu cuenta.

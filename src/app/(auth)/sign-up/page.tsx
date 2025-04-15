@@ -106,7 +106,7 @@ export default function SignUpPage() {
                   name="secondName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Segundo nombre (opcional)</FormLabel>
+                      <FormLabel>Segundo nombre</FormLabel>
                       <FormControl>
                         <Input placeholder="David" {...field} />
                       </FormControl>
@@ -136,7 +136,7 @@ export default function SignUpPage() {
                   name="secondSurname"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Apellido materno (opcional)</FormLabel>
+                      <FormLabel>Apellido materno</FormLabel>
                       <FormControl>
                         <Input placeholder="Smith" {...field} />
                       </FormControl>
