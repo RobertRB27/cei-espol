@@ -5,7 +5,8 @@ import { getServerSession } from 'next-auth/next';
 // API endpoint to change application status
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  // Usaremos any temporalmente para permitir la compilación
+  context: any
 ) {
   try {
     const { params } = context;

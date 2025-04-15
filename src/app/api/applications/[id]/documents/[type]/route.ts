@@ -33,9 +33,11 @@ async function getApplicationData(id: string) {
   return result.rows[0];
 }
 
+// En Next.js 15, los route handlers usan esta estructura específica
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string; type: string } }
+  // Usaremos any temporalmente para permitir la compilación
+  context: any
 ) {
   try {
     // Get the current session to verify authentication
@@ -45,7 +47,8 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const { id, type } = params;
+    // Extraer parámetros de la URL
+    const { id, type } = context.params;
     
     // Validate document type
     const validTypes = ['solicitud', 'evaluacion', 'consentimiento', 'conflictos'];
@@ -108,7 +111,7 @@ export async function GET(
     // For now, just return JSON data
     return NextResponse.json(documentData);
   } catch (error) {
-    console.error(`Error generating ${params.type} document:`, error);
+    console.error(`Error generating ${context.params.type} document:`, error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

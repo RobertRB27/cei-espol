@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SignInSchema, SignInFormData } from '@/lib/auth/schemas';
@@ -29,14 +29,22 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 
+// Componente para manejar los parámetros de búsqueda
+function SearchParamsHandler({ onRegisteredSuccess }: { onRegisteredSuccess: (success: boolean) => void }) {
+  const searchParams = useSearchParams();
+  const registeredSuccess = searchParams.get('registered') === 'true';
+  
+  // Effect to update parent component
+  onRegisteredSuccess(registeredSuccess);
+  
+  return null;
+}
+
 export default function SignInPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  
-  // Check for registration success message
-  const registeredSuccess = searchParams.get('registered') === 'true';
+  const [registeredSuccess, setRegisteredSuccess] = useState(false);
 
   const form = useForm<z.infer<typeof SignInSchema>>({
     resolver: zodResolver(SignInSchema),
@@ -87,7 +95,14 @@ export default function SignInPage() {
             </div>
           )}
           
-          {registeredSuccess && (
+          {/* Suspense boundary para el uso de useSearchParams */}
+        <Suspense fallback={null}>
+          <SearchParamsHandler 
+            onRegisteredSuccess={(success) => setRegisteredSuccess(success)} 
+          />
+        </Suspense>
+        
+        {registeredSuccess && (
             <div className="bg-green-50 text-green-600 p-3 rounded-md mb-4">
               Registration successful! Please sign in with your credentials.
             </div>

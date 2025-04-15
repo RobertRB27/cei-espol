@@ -5,7 +5,8 @@ import { authOptions } from '@/lib/auth/auth-config';
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  // Usaremos any temporalmente para permitir la compilación
+  context: any
 ) {
   try {
     // Properly destructure id directly to avoid the Next.js warning

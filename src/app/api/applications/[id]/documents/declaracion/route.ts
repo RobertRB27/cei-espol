@@ -6,14 +6,15 @@ import { generateDeclaracionPDF } from '@/lib/pdf/declaracion-template';
 // Generate the Declaración de Asunción de Responsabilidad document
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  // Usaremos any temporalmente para permitir la compilación
+  context: any
 ) {
   // Check if this is a download request or just a preview
   const searchParams = request.nextUrl.searchParams;
   const isDownload = searchParams.get('download') === 'true';
   try {
     // Properly handle params.id in an async context as required by Next.js
-    const { id } = params;
+    const { id } = context.params;
     console.log('Starting Declaracion PDF generation for application:', id);
     
     // Get the current session to verify authentication

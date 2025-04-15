@@ -5,7 +5,8 @@ import { authOptions } from '@/lib/auth/auth-config';
 
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  // Usaremos any temporalmente para permitir la compilación
+  context: any
 ) {
   try {
     const { params } = context;

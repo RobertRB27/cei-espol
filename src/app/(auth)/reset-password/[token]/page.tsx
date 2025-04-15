@@ -35,7 +35,6 @@ const NewPasswordSchema = z.object({
 type FormData = z.infer<typeof NewPasswordSchema>;
 
 // Eliminamos temporalmente la tipificación para permitir el despliegue
-// @ts-ignore - Esto se arreglará más adelante cuando tengamos tiempo
 export default function NewPasswordPage({ params }: any) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
