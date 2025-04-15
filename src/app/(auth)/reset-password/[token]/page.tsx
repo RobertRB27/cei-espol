@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import Link from 'next/link';
+import type { Metadata } from 'next';
 
 // UI Components
 import {
@@ -33,12 +34,12 @@ const NewPasswordSchema = z.object({
 
 type FormData = z.infer<typeof NewPasswordSchema>;
 
-// En Next.js 15, los parámetros se pasan como props no como un objeto anidado
-export default function NewPasswordPage(props: {
-  params: { token: string },
-  searchParams: Record<string, string | string[] | undefined>
-}) {
-  const { params } = props;
+// Definición del componente para Next.js 15
+type Props = {
+  params: { token: string }
+}
+
+export default function NewPasswordPage({ params }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
