@@ -3,8 +3,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { JWT } from "next-auth/jwt";
 import bcrypt from "bcrypt";
 import { z } from "zod";
-import { Pool } from "pg";
 import NextAuth from "next-auth";
+
+// Importar la conexión centralizada a la base de datos
+import pool from "@/lib/db";
 
 // Extend the Session and JWT types
 declare module "next-auth" {
@@ -26,14 +28,7 @@ declare module "next-auth/jwt" {
   }
 }
 
-// PostgreSQL connection pool
-const pool = new Pool({
-  host: 'localhost',
-  port: 5432,
-  database: 'cei_espol_db_dev',
-  user: 'admin_cei_db',
-  password: 'rosso2711',
-});
+// Usamos la instancia de Pool compartida y centralizada importada desde @/lib/db
 
 // Auth options configuration
 export const authOptions: NextAuthOptions = {

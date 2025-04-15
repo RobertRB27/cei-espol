@@ -14,14 +14,14 @@ console.log('DATABASE_URL disponible:', !!process.env.DATABASE_URL);
 console.log('Entorno de desarrollo:', isDevelopment);
 
 if (isDevelopment && !process.env.DATABASE_URL) {
-  // Local development database - solo si DATABASE_URL no está disponible
+  // Local development database - usando variables de entorno
   console.log('Usando configuración de base de datos local');
   poolConfig = {
-    host: 'localhost',
-    port: 5432,
-    database: 'cei_espol_db_dev',
-    user: 'admin_cei_db',
-    password: 'rosso2711',
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT || '5432'),
+    database: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
   };
 } else {
   // Production database (Neon) o si DATABASE_URL está disponible incluso en desarrollo
