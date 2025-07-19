@@ -28,11 +28,11 @@ declare module "next-auth/jwt" {
 
 // PostgreSQL connection pool
 const pool = new Pool({
-  host: 'localhost',
-  port: 5432,
-  database: 'cei_espol_db_dev',
-  user: 'admin_cei_db',
-  password: 'rosso2711',
+  host: process.env.DB_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT || '5432'),
+  database: process.env.DB_NAME || 'cei_espol_db_dev',
+  user: process.env.DB_USER || 'admin_cei_db',
+  password: process.env.DB_PASSWORD || 'rosso2711',
 });
 
 // Auth options configuration

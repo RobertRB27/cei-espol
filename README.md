@@ -1,4 +1,25 @@
+# CEI-ESPOL
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## Environment Setup
+
+Before running the application, you need to set up your environment variables. Copy the `.env.example` file to `.env.local` and fill in the required values:
+
+```bash
+cp .env.example .env.local
+```
+
+Required environment variables:
+- `DB_HOST`: Database host (default: localhost)
+- `DB_PORT`: Database port (default: 5432)
+- `DB_NAME`: Database name (default: cei_espol_db_dev)
+- `DB_USER`: Database username (default: admin_cei_db)
+- `DB_PASSWORD`: Database password (required)
+- `AUTH_SECRET`: NextAuth secret (required)
+- `NEXTAUTH_URL`: NextAuth URL (default: http://localhost:3000)
+- `NEXTAUTH_SECRET`: NextAuth secret (required)
+- `NEXT_PUBLIC_APP_URL`: Application URL (default: http://localhost:3000)
 
 ## Getting Started
 
@@ -19,6 +40,14 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Security Features
+
+- Database credentials are stored in environment variables
+- Proper authorization checks for API endpoints
+- Optimized database connection pooling
+- Input validation using Zod schemas
+- Password hashing with bcrypt
 
 ## Learn More
 

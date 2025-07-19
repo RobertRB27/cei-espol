@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { query, withTransaction } from '@/lib/db';
 import pool from '@/lib/db';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth/auth-config';
@@ -91,9 +91,11 @@ export async function GET(request: NextRequest) {
     console.log('Requested userId:', userId);
     console.log('Session user:', JSON.stringify(session.user, null, 2));
     
-    // Temporarily allow all authenticated users to access applications for testing
-    // We'll reinstate proper checks after debugging
-    // Original check: userId !== session.user.id && session.user.role_id !== 3 && session.user.role_id !== 2
+    // Check if user is authorized to access these applications
+    // Users can only access their own applications unless they are admins (role_id 2) or reviewers (role_id 3)
+    if (userId !== session.user.id && session.user.role_id !== 3 && session.user.role_id !== 2) {
+      return NextResponse.json({ error: 'Unauthorized access to applications' }, { status: 403 });
+    }
 
     // Query the database for applications
     const result = await query(
@@ -217,14 +219,8 @@ export async function POST(request: NextRequest) {
       created_by: session.user.email
     };
     
-    // Get a single client to handle the entire transaction
-    const client = await pool.connect();
-    
-    try {
-      // Begin transaction
-      await client.query('BEGIN');
-      
-      // Insert new application
+    // Use the transaction helper for better performance and error handling
+    const result = await withTransaction(async (client) => {
       // Log values before inserting
       console.log('Inserting application with values:', {
         userId,
@@ -239,7 +235,7 @@ export async function POST(request: NextRequest) {
       const uniqueCodification = `${codification}-${randomUUID().substring(0, 8)}`;
       console.log('Using guaranteed unique codification:', uniqueCodification);
       
-      const result = await client.query(
+      const insertResult = await client.query(
         `INSERT INTO applications.applications
           (user_id, project_title, investigation_type, category_type, sequential_number, codification, metadata)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -255,7 +251,7 @@ export async function POST(request: NextRequest) {
         ]
       );
       
-      const { id: applicationId, codification: finalCodification } = result.rows[0];
+      const { id: applicationId, codification: finalCodification } = insertResult.rows[0];
       
       // Log the final codification that was used (may differ from original if there was a conflict)
       console.log('Final codification used:', finalCodification);
@@ -275,28 +271,11 @@ export async function POST(request: NextRequest) {
         ]
       );
       
-      // Commit transaction
-      await client.query('COMMIT');
-      
-      console.log('Application created successfully:', { id: applicationId, codification });
-      return NextResponse.json({ success: true, id: applicationId, codification: finalCodification });
-    } catch (error) {
-      // Rollback transaction on error
-      try {
-        await client.query('ROLLBACK');
-      } catch (rollbackError) {
-        console.error('Error rolling back transaction:', rollbackError);
-      }
-      console.error('Error creating application:', error);
-      // Log the full error details for debugging
-      console.log('Full error details:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
-      // Type assertion for error object
-      const errorWithMessage = error as { message?: string };
-      return NextResponse.json({ error: `Database error: ${errorWithMessage.message || 'Unknown error'}` }, { status: 500 });
-    } finally {
-      // Always release the client back to the pool
-      client.release();
-    }
+      return { applicationId, finalCodification };
+    });
+    
+    console.log('Application created successfully:', { id: result.applicationId, codification: result.finalCodification });
+    return NextResponse.json({ success: true, id: result.applicationId, codification: result.finalCodification });
   } catch (error) {
     console.error('Error processing application creation:', error);
     // Log the full error details for debugging
